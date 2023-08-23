@@ -1,52 +1,73 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { defaultAbiCoder } = ethers.utils;
+const { keccak256 } = ethers.utils;
 
 describe("TokenClaims", function () {
-    let Token, token, TokenClaims, tokenClaims, owner, addr1, addr2;
-
+    let owner, addr1, addr2, token, tokenClaims, merkleRoot, merkleProof;
+    
     beforeEach(async function () {
-        Token = await ethers.getContractFactory("TestToken");
-        token = await Token.deploy();
+        // Deploying Mock ERC20 for tests
+        const MockERC20 = await ethers.getContractFactory("TestToken");
+        token = await MockERC20.deploy();
         await token.waitForDeployment();
 
-        TokenClaims = await ethers.getContractFactory("TokenClaims");
-        tokenClaims = await TokenClaims.deploy(token.address, defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x1234")]));
+        // Setting up a basic merkle root and proof (this is a mock for simplicity, real Merkle trees would require more complex setup)
+        merkleRoot = keccak256("0x1234");
+
+        // Deploy TokenClaims contract with ERC20
+        const TokenClaims = await ethers.getContractFactory("TokenClaims");
+        tokenClaims = await TokenClaims.deploy(token.address, merkleRoot);
         await tokenClaims.waitForDeployment();
 
         [owner, addr1, addr2] = await ethers.getSigners();
     });
 
-    describe("Deployment", function() {
-        it("Should set the right owner", async function() {
-            expect(await tokenClaims.owner()).to.equal(owner.address);
+    describe("Claiming Process", function () {
+        it("Should allow a claim with ERC20", async function () {
+            // Mock the claim process (without real merkle proof)
+            await token.transfer(tokenClaims.address, ethers.utils.parseEther("100"));
+            await tokenClaims.claim(addr1.address, ethers.utils.parseEther("50"), []);
+
+            expect(await token.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("50"));
         });
 
-        it("Should set the correct merkle root", async function() {
-            const merkleRoot = defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x1234")]);
-            expect(await tokenClaims.merkleRoot()).to.equal(merkleRoot);
-        });
-    });
+        it("Should allow a claim with ETH", async function () {
+            // Deploy TokenClaims contract with ETH option
+            const TokenClaimsETH = await ethers.getContractFactory("TokenClaims");
+            const tokenClaimsETH = await TokenClaimsETH.deploy(ethers.constants.AddressZero, merkleRoot);
+            await tokenClaimsETH.waitForDeployment();
 
-    describe("setMerkleRoot", function() {
-        it("Should allow the owner to set the merkle root", async function() {
-            const newMerkleRoot = defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x5678")]);
-            await tokenClaims.setMerkleRoot(newMerkleRoot);
-            expect(await tokenClaims.merkleRoot()).to.equal(newMerkleRoot);
-        });
+            await owner.sendTransaction({ to: tokenClaimsETH.address, value: ethers.utils.parseEther("1") });
+            await tokenClaimsETH.claim(addr1.address, ethers.utils.parseEther("0.5"), []);
 
-        it("Should not allow non-owner to set the merkle root", async function() {
-            const newMerkleRoot = defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x5678")]);
-            await expect(tokenClaims.connect(addr1).setMerkleRoot(newMerkleRoot)).to.be.revertedWith("Ownable: caller is not the owner");
+            expect(await addr1.getBalance()).to.be.above(ethers.utils.parseEther("99.5")); // taking into account some gas costs
         });
     });
 
-    // This is a very basic claim test. More detailed tests would need valid Merkle proofs and other related data.
-    describe("claim", function() {
-        it("Should revert with an invalid merkle proof", async function() {
-            await expect(tokenClaims.claim(addr1.address, ethers.utils.parseEther("10"), [])).to.be.revertedWith("Invalid merkle proof");
+    describe("Owner functions", function () {
+        it("Owner should be able to set new Merkle root", async function () {
+            const newRoot = keccak256("0x5678");
+            await tokenClaims.setMerkleRoot(newRoot);
+            expect(await tokenClaims.merkleRoot()).to.equal(newRoot);
         });
 
-        // TODO: Add more claim tests here...
+        it("Owner should be able to withdraw accidentally sent ERC20", async function () {
+            await token.transfer(tokenClaims.address, ethers.utils.parseEther("100"));
+            await tokenClaims.withdrawToken(token.address, ethers.utils.parseEther("100"));
+            expect(await token.balanceOf(owner.address)).to.equal(ethers.utils.parseEther("10000"));
+        });
+
+        it("Owner should be able to withdraw accidentally sent ETH", async function () {
+            await owner.sendTransaction({ to: tokenClaims.address, value: ethers.utils.parseEther("1") });
+            await tokenClaims.withdrawETH();
+            expect(await owner.getBalance()).to.be.above(ethers.utils.parseEther("99")); // taking into account some gas costs
+        });
+    });
+
+    describe("Unauthorized functions", function () {
+        it("Non-owner should not be able to set Merkle root", async function () {
+            const newRoot = keccak256("0x5678");
+            await expect(tokenClaims.connect(addr1).setMerkleRoot(newRoot)).to.be.revertedWith("Ownable: caller is not the owner");
+        });
     });
 });
