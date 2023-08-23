@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TokenClaims {
+contract TokenClaims is Ownable {
     IERC20 public token;
     bytes32 public merkleRoot;
     mapping(address => uint256) public claimedAmount;
@@ -16,7 +17,7 @@ contract TokenClaims {
         merkleRoot = merkleRoot_;
     }
 
-    function setMerkleRoot(bytes32 merkleRoot_) external {
+    function setMerkleRoot(bytes32 merkleRoot_) external onlyOwner {
         merkleRoot = merkleRoot_;
     }
 

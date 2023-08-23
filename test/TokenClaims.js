@@ -1,62 +1,52 @@
-const { ethers } = require("hardhat");
-
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
+const { defaultAbiCoder } = ethers.utils;
 
-describe("TokenClaims", () => {
-  let TokenClaims;
-  let tokenClaims;
-  let ERC20;
-  let token;
-  let owner;
-  let claimer;
-  let merkleRoot;
-  let claimAmount;
-  let merkleProof;
+describe("TokenClaims", function () {
+    let Token, token, TokenClaims, tokenClaims, owner, addr1, addr2;
 
-  beforeEach(async () => {
-    // Deploy ERC20 token for testing
-    ERC20 = await ethers.getContractFactory("TestToken");
-    token = await ERC20.deploy();
-    await token.waitForDeployment(); // Wait for the transaction to be mined
+    beforeEach(async function () {
+        Token = await ethers.getContractFactory("TestToken");
+        token = await Token.deploy();
+        await token.waitForDeployment();
 
-    // Set initial merkle root for testing
-    merkleRoot = ethers.keccak256("0x1234");
+        TokenClaims = await ethers.getContractFactory("TokenClaims");
+        tokenClaims = await TokenClaims.deploy(token.address, defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x1234")]));
+        await tokenClaims.waitForDeployment();
 
-    // Deploy TokenClaims contract
-    TokenClaims = await ethers.getContractFactory("TokenClaims");
-    [owner, claimer] = await ethers.getSigners();
-    tokenClaims = await TokenClaims.deploy(token.target, merkleRoot);
-    await tokenClaims.waitForDeployment();
+        [owner, addr1, addr2] = await ethers.getSigners();
+    });
 
-    // Set a claim amount and merkle proof for testing
-    claimAmount = ethers.parseEther("100");
-    const leaf = ethers.keccak256(ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [claimer.address, claimAmount]));
-    merkleProof = [leaf]; // This is just a sample; in practice, you would construct a valid Merkle proof
+    describe("Deployment", function() {
+        it("Should set the right owner", async function() {
+            expect(await tokenClaims.owner()).to.equal(owner.address);
+        });
 
-    // Mint tokens to TokenClaims contract
-    await token.mint(tokenClaims.target, claimAmount);
-  });
+        it("Should set the correct merkle root", async function() {
+            const merkleRoot = defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x1234")]);
+            expect(await tokenClaims.merkleRoot()).to.equal(merkleRoot);
+        });
+    });
 
-  it("should allow a claim", async () => {
-    // You'll need to set up a real Merkle proof for this to pass
-    // For now, this will demonstrate the test structure and will fail with "Invalid merkle proof"
-    await expect(tokenClaims.claim(claimer.address, claimAmount, merkleProof)).to.be.revertedWith("Invalid merkle proof");
-  });
+    describe("setMerkleRoot", function() {
+        it("Should allow the owner to set the merkle root", async function() {
+            const newMerkleRoot = defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x5678")]);
+            await tokenClaims.setMerkleRoot(newMerkleRoot);
+            expect(await tokenClaims.merkleRoot()).to.equal(newMerkleRoot);
+        });
 
-  it("should emit Claimed event on successful claim", async () => {
-    // You would replace this with the correct setup for a successful claim
-    // For now, this will demonstrate the test structure
-    await expect(tokenClaims.claim(claimer.address, claimAmount, merkleProof))
-      .to.be.reverted; // Expecting revert due to invalid Merkle proof
-  });
+        it("Should not allow non-owner to set the merkle root", async function() {
+            const newMerkleRoot = defaultAbiCoder.encode(["bytes32"], [ethers.utils.keccak256("0x5678")]);
+            await expect(tokenClaims.connect(addr1).setMerkleRoot(newMerkleRoot)).to.be.revertedWith("Ownable: caller is not the owner");
+        });
+    });
 
-  it("should prevent claiming more than the total amount", async () => {
-    // You would replace this with the correct setup for this case
-    // For now, this will demonstrate the test structure
-    const overClaimAmount = ethers.utils.parseEther("101");
-    await expect(tokenClaims.claim(claimer.address, overClaimAmount, merkleProof))
-      .to.be.revertedWith("Invalid merkle proof"); // Expecting revert due to invalid Merkle proof
-  });
+    // This is a very basic claim test. More detailed tests would need valid Merkle proofs and other related data.
+    describe("claim", function() {
+        it("Should revert with an invalid merkle proof", async function() {
+            await expect(tokenClaims.claim(addr1.address, ethers.utils.parseEther("10"), [])).to.be.revertedWith("Invalid merkle proof");
+        });
 
-  // More tests as needed for your specific use case
+        // TODO: Add more claim tests here...
+    });
 });
