@@ -9,7 +9,7 @@ contract TokenClaims {
     bytes32 public merkleRoot;
     mapping(address => uint256) public claimedAmount;
 
-    event Claimed(uint256 index, address account, uint256 amount);
+    event Claimed(address account, uint256 amount);
 
     constructor(address token_, bytes32 merkleRoot_) {
         token = IERC20(token_);
@@ -20,9 +20,9 @@ contract TokenClaims {
         merkleRoot = merkleRoot_;
     }
 
-    function claim(uint256 index, address account, uint256 totalAmount, bytes32[] calldata merkleProof) external {
+    function claim(address account, uint256 totalAmount, bytes32[] calldata merkleProof) external {
         // Verify the merkle proof
-        bytes32 node = keccak256(abi.encodePacked(index, account, totalAmount));
+        bytes32 node = keccak256(abi.encodePacked(account, totalAmount));
         require(MerkleProof.verify(merkleProof, merkleRoot, node), "Invalid merkle proof");
 
         // Calculate the claimable amount
@@ -35,8 +35,6 @@ contract TokenClaims {
         // Send the token
         require(token.transfer(account, amountToClaim), "Transfer failed");
 
-        emit Claimed(index, account, amountToClaim);
+        emit Claimed(account, amountToClaim);
     }
-
-    // You can add administrative functions like updating the merkleRoot according to your needs
 }
