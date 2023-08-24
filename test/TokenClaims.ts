@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Signer, Contract, ContractTransactionResponse } from "ethers";
-// import MerkleTree from "merkletreejs";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import { TokenClaims } from "../typechain-types";
 

@@ -22,7 +22,6 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.3",
     "@openzeppelin/merkle-tree": "^1.0.5",
-    "ethers": "^6.7.1",
-    "merkletreejs": "^0.3.10"
+    "ethers": "^6.7.1"
   }
 }
