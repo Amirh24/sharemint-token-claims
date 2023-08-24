@@ -15,7 +15,6 @@ async function main() {
   // await tokenClaims.deployed();
   await tokenClaims.waitForDeployment(); // Wait for the transaction to be mined
 
-
   console.log("TokenClaims deployed to:", tokenClaims.address);
 }
 

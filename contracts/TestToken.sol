@@ -7,6 +7,6 @@ contract TestToken is ERC20 {
     constructor() ERC20("Test Token", "TTK") {
         // Mint initial supply to deployer
         // (replace 1000000 with your desired initial supply)
-        _mint(msg.sender, 1000000 * 10**decimals());
+        _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 }

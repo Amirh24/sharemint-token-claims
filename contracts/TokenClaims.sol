@@ -14,7 +14,7 @@ contract TokenClaims is Ownable {
     event Claimed(address account, uint256 amount);
 
     constructor(address token_, bytes32 merkleRoot_) {
-        if(token_ == address(0)) {
+        if (token_ == address(0)) {
             isETH = true;
         } else {
             token = IERC20(token_);
@@ -26,9 +26,16 @@ contract TokenClaims is Ownable {
         merkleRoot = merkleRoot_;
     }
 
-    function claim(address account, uint256 totalAmount, bytes32[] calldata merkleProof) external {
+    function claim(
+        address account,
+        uint256 totalAmount,
+        bytes32[] calldata merkleProof
+    ) external {
         bytes32 node = keccak256(abi.encodePacked(account, totalAmount));
-        require(MerkleProof.verify(merkleProof, merkleRoot, node), "Invalid merkle proof");
+        require(
+            MerkleProof.verify(merkleProof, merkleRoot, node),
+            "Invalid merkle proof"
+        );
 
         uint256 amountToClaim = totalAmount - claimedAmount[account];
         require(amountToClaim > 0, "No tokens left to claim");
@@ -53,7 +60,10 @@ contract TokenClaims is Ownable {
     }
 
     // Function to allow owner to withdraw accidentally sent ERC20 tokens
-    function withdrawToken(address tokenAddress, uint256 amount) external onlyOwner {
+    function withdrawToken(
+        address tokenAddress,
+        uint256 amount
+    ) external onlyOwner {
         IERC20 _token = IERC20(tokenAddress);
         uint256 balance = _token.balanceOf(address(this));
         require(balance >= amount, "Not enough tokens in the contract");
