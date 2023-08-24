@@ -1,15 +1,18 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Signer, Contract } from "ethers";
+import { Signer, Contract, ContractTransactionResponse } from "ethers";
 // import MerkleTree from "merkletreejs";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+import { TokenClaims } from "../typechain-types";
 
 describe("TokenClaims", function () {
   let owner: Signer,
     addr1: Signer,
     addr2: Signer,
     token: Contract,
-    tokenClaims: Contract;
+    tokenClaims: TokenClaims & {
+      deploymentTransaction(): ContractTransactionResponse;
+    };
 
   beforeEach(async function () {
     // Deploying Mock ERC20 for tests
@@ -153,9 +156,8 @@ describe("TokenClaims", function () {
   describe("Unauthorized functions", function () {
     it("Non-owner should not be able to set Merkle root", async function () {
       const newRoot = ethers.keccak256("0x5678");
-      // TODO fix any
       await expect(
-        (tokenClaims.connect(addr1) as any).setMerkleRoot(newRoot)
+        tokenClaims.connect(addr1).setMerkleRoot(newRoot)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
