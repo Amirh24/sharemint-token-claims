@@ -31,9 +31,10 @@ contract TokenClaims is Ownable {
         uint256 totalAmount,
         bytes32[] calldata merkleProof
     ) external {
-        bytes32 node = keccak256(abi.encodePacked(account, totalAmount));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(account, totalAmount))));
+
         require(
-            MerkleProof.verify(merkleProof, merkleRoot, node),
+            MerkleProof.verify(merkleProof, merkleRoot, leaf),
             "Invalid merkle proof"
         );
 

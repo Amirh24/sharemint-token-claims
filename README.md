@@ -23,5 +23,6 @@ npm run deploy
 ```shell
 npx hardhat help
 REPORT_GAS=true npx hardhat test
+npx hardhat test --typecheck
 npx hardhat node
 ```
