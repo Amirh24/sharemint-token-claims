@@ -26,3 +26,15 @@ REPORT_GAS=true npx hardhat test
 npx hardhat test --typecheck
 npx hardhat node
 ```
+
+### Deploy contract locally
+
+```shell
+npx hardhat node
+```
+
+And in another tab:
+
+```shell
+npm run deploy
+```
