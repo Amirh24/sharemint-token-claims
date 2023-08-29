@@ -38,6 +38,12 @@ npx hardhat run scripts/getMerkleRoot.ts --network sepolia
 ADDRESS=0x1234 npx hardhat run scripts/getClaimedAmount.ts --network sepolia
 ```
 
+### Send Tokens To Claim Contract
+
+```shell
+AMOUNT=1000 npx hardhat run scripts/sendTokensToClaimContract.ts --network sepolia
+```
+
 ## Hardhat
 
 ```shell
