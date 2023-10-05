@@ -15,8 +15,9 @@ async function main() {
   if (!tokenAddress) throw new Error("No token address found");
 
   const merkleRoot = keccak256("0x1234");
-
+  
   console.log("tokenAddress:", tokenAddress);
+  console.log("merkleRoot:", merkleRoot)
 
   const TokenClaims = await hre.ethers.getContractFactory("TokenClaims");
   const tokenClaims = await TokenClaims.deploy(tokenAddress, merkleRoot);

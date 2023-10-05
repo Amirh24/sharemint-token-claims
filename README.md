@@ -81,3 +81,10 @@ And in another tab:
 ```shell
 npm run deploy
 ```
+
+### Verify Contract on Etherscan
+
+```shell
+# npx hardhat verify --network polygon <CONTRACT_ADDRESS> <TOKEN_ADDRESS> <MERKLE_ROOT>
+npx hardhat verify --network polygon 0x6CB298D9219Bb94863261125858b6108C7009Ac2 "0x431CD3C9AC9Fc73644BF68bF5691f4B83F9E104f" "0x56570de287d73cd1cb6092bb8fdee6173974955fdef345ae579ee9f475ea7432"
+```
