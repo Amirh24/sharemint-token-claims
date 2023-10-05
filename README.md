@@ -12,10 +12,23 @@ npm install
 npm test
 ```
 
+## Steps
+
+0. For a real contract we won't be creating a new token. Set token address in `.env` file. Otherwise it deploys a new contract.
+1. Deploy a new token and contract: `npm run deploy:sepolia`
+2. Set new token and contract address in `.env` file
+3. Send contract tokens (see command below)
+
 ## Running the scripts
 
+### Deploy a new claims contract
+
 ```shell
-npm run deploy
+npm run deploy:local
+```
+
+```shell
+npm run deploy:sepolia
 ```
 
 ### Set Merkle Root
