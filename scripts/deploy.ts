@@ -2,11 +2,9 @@ import { keccak256 } from "ethers";
 import hre from "hardhat";
 
 async function main() {
-  // const tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   let tokenAddress = process.env.TOKEN_ADDRESS;
 
-  // comment out if you don't want to deploy the test token
-  if (!tokenAddress) {
+  if (tokenAddress === 'CREATE_TOKEN') {
     const TestToken = await hre.ethers.getContractFactory("TestToken");
     const testToken = await TestToken.deploy();
     await testToken.waitForDeployment();

@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config();
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 
@@ -7,9 +7,13 @@ const config: HardhatUserConfig = {
   networks: {
     sepolia: {
       url: process.env.SEPOLIA_RPC_URL,
-      accounts: [process.env.SEPOLIA_PRIVATE_KEY!]
-    }
-  }
+      accounts: [process.env.PRIVATE_KEY!],
+    },
+    polygon: {
+      url: "https://polygon-rpc.com",
+      accounts: [process.env.PRIVATE_KEY!],
+    },
+  },
 };
 
 export default config;

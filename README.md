@@ -14,8 +14,8 @@ npm test
 
 ## Steps
 
-0. For a real contract we won't be creating a new token. Set token address in `.env` file. Otherwise it deploys a new contract.
-1. Deploy a new token and contract: `npm run deploy:sepolia`
+0. For a real contract we won't be creating a new token. Set `TOKEN_ADDRESS` env var. You can set it to `CREATE_TOKEN` to create a new token.
+1. Deploy a new token and contract: `TOKEN_ADDRESS=0x431CD3C9AC9Fc73644BF68bF5691f4B83F9E104f npm run deploy:polygon`
 2. Set new token and contract address in `.env` file
 3. Send contract tokens (see command below)
 
@@ -29,6 +29,10 @@ npm run deploy:local
 
 ```shell
 npm run deploy:sepolia
+```
+
+```shell
+npm run deploy:polygon
 ```
 
 ### Set Merkle Root
